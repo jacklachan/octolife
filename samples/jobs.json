@@ -1,0 +1,9 @@
+[
+  {"organization": "Google", "title": "Software Engineering Intern", "url": "https://careers.google.com/jobs/sample-1",
+   "cycle_season": "Summer 2027", "location": "Bengaluru", "role_category": "software",
+   "closing_date": "2026-12-15T23:59:00+05:30", "source_portal": "sample-json"},
+  {"organization": "google", "title": "Software  Engineering Intern", "url": "https://example.com/mirror/google-swe",
+   "cycle_season": "Summer 2027", "location": "Bengaluru", "source_portal": "sample-mirror"},
+  {"organization": "Acme Robotics", "title": "ML Research Intern", "url": "https://acme.example.com/jobs/ml",
+   "cycle_season": "Summer 2027", "location": "Remote", "role_category": "ai_ml", "source_portal": "sample-json"}
+]
