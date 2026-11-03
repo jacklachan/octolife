@@ -93,6 +93,7 @@ def generate_briefing(session, user: UserPreferences, llm: LLMProvider, now_utc=
         try:
             # task titles came from emails, so the agenda is untrusted input too
             body = llm.synthesize_briefing(wrap_untrusted(fallback, "agenda", str(now_utc.date()))) or ""
+            run.prompt_tokens, run.completion_tokens = llm.last_usage
         except Exception as exc:
             log.warning("briefing LLM failed, using EDF fallback: %s", exc)
             session.add(AuditEvent(user_id=user.id, action="briefing_llm_fallback", details_json={"error": repr(exc)}))

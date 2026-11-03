@@ -62,6 +62,7 @@ def ingest_document(session, user: UserPreferences, filename: str, content: str,
             session.add(AuditEvent(user_id=user.id, action="llm_output_rejected",
                                    details_json={"document": filename, "errors": exc.error_count()}))
             result = Extraction(classification="unrelated")
+        run.prompt_tokens, run.completion_tokens = llm.last_usage
         for item in result.tasks:
             quote = " ".join(item.evidence_quote.split())
             source = next((c for c in chunks if quote in c.chunk_text), chunks[0] if chunks else None)

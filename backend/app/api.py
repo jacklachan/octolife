@@ -11,7 +11,7 @@ from app.agents.central_coordinator import generate_briefing
 from app.agents.deadline_guardian import normalize_interval
 from app.config import settings
 from app.database import get_db
-from app.llm import LLMProvider, get_llm
+from app.llm import LLMProvider, LLMUnavailable, get_llm
 from app.models import AgentEvent, AgentRun, Notification, Opportunity, Task, TaskRevision, UserPreferences, ensure_user, now
 from app.orchestration.contracts import TaskConfirmed, TaskRescheduled
 from app.orchestration.outbox import emit, track_run
@@ -157,6 +157,8 @@ def ingest_mail(body: RawEmail, db: Db, user: User, llm: LLM):
     """Feed one raw RFC 2822 email (stand-in for Gmail sync until OAuth lands)."""
     try:
         record = mail_intel.ingest_email(db, user, body.raw, llm)
+    except LLMUnavailable as exc:  # nothing was stored, so resending later is safe
+        raise HTTPException(503, str(exc))
     except ValueError as exc:
         raise HTTPException(422, str(exc))
     if record is None:
@@ -195,8 +197,11 @@ def update_opportunity_status(opportunity_id: str, body: OpportunityStatusUpdate
 @router.post("/courses/upload", status_code=201)
 def upload_course_document(body: DocumentUpload, db: Db, user: User, llm: LLM):
     # shortcut: JSON text upload (Markdown/plain). PDF needs pypdf/pdfplumber + multipart; add with Milestone 5 PDFs
-    doc = academic_intel.ingest_document(db, user, body.filename, body.text, body.course_code, body.term, llm,
-                                         body.course_title)
+    try:
+        doc = academic_intel.ingest_document(db, user, body.filename, body.text, body.course_code, body.term, llm,
+                                             body.course_title)
+    except LLMUnavailable as exc:
+        raise HTTPException(503, str(exc))
     return {"document_id": doc.id, "parsing_status": doc.parsing_status}
 
 

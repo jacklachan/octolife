@@ -33,6 +33,11 @@ cp .env.example .env
 .venv/Scripts/uvicorn app.main:app --app-dir backend --workers 1
 ```
 
+By default it uses the offline mock LLM. To use a local model, set `LLM_PROVIDER=ollama` in `.env`
+(default model `qwen2.5:1.5b`, `OLLAMA_NUM_GPU=0` forces CPU). Output is constrained to the extraction
+JSON schema and validated again in Python; if Ollama is down, ingest endpoints return 503 and store
+nothing, and the briefing falls back to the rule-based agenda.
+
 Then open http://127.0.0.1:8000/docs. Try in order:
 1. `POST /api/v1/mail/ingest` with the contents of `samples/midterm.eml` as `{"raw": "..."}`
 2. `POST /api/v1/tasks` with a career task overlapping Nov 15 14:00-16:00 UTC
@@ -54,7 +59,7 @@ samples/           an email, a job feed, a syllabus
 
 ## Not built yet (checklist IDs)
 
-- Real LLM provider: only `LLM_PROVIDER=mock` (keyword + regex) is wired. Add a class implementing `LLMProvider` in `llm.py`.
+- Hosted LLM providers (OpenAI/Anthropic): `mock` and local `ollama` are wired. Add a class implementing `LLMProvider` in `llm.py`.
 - Gmail OAuth + sync (TSK-026..028), AES token encryption (TSK-051): emails come in through `/mail/ingest` for now.
 - Alembic migrations (TSK-009): tables are created with `create_all`.
 - Auth (single local user), log secret-masking filter (TSK-005), LLM budget cap (TSK-053).

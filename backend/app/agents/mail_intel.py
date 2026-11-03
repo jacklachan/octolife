@@ -48,8 +48,9 @@ def ingest_email(session, user: UserPreferences, raw: str, llm: LLMProvider) -> 
             session.add(AuditEvent(user_id=user.id, action="llm_output_rejected",
                                    details_json={"message_id": message_id, "errors": exc.error_count()}))
             result = Extraction(classification="unrelated")
+        run.prompt_tokens, run.completion_tokens = llm.last_usage
 
-        record = EmailRecord(user_id=user.id, provider_message_id=message_id, sender=str(msg["From"] or ""),
+        record =EmailRecord(user_id=user.id, provider_message_id=message_id, sender=str(msg["From"] or ""),
                              recipient=str(msg["To"] or ""), subject=str(msg["Subject"] or ""), sent_at=anchor,
                              sanitized_body_text=body, classification_label=result.classification)
         session.add(record)
